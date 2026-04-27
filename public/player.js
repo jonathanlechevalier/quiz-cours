@@ -7,6 +7,12 @@ function show(name) {
 
 let myName = '';
 
+const urlCode = new URLSearchParams(location.search).get('code');
+if (urlCode && /^\d{4}$/.test(urlCode)) {
+  $('code').value = urlCode;
+  setTimeout(() => $('name').focus(), 0);
+}
+
 $('join-form').addEventListener('submit', (e) => {
   e.preventDefault();
   const code = $('code').value.trim();

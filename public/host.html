@@ -20,10 +20,18 @@
   <div id="screen-lobby" class="screen hidden">
     <h2 id="lobby-title"></h2>
     <div class="connect-info">
-      <p class="muted">Les étudiants se connectent à</p>
-      <p class="big" id="public-url"></p>
-      <p class="muted">avec le code de session</p>
-      <p class="code"><span id="code"></span></p>
+      <div class="connect-grid">
+        <div class="connect-text">
+          <p class="muted">Les étudiants se connectent à</p>
+          <p class="big" id="public-url"></p>
+          <p class="muted">avec le code de session</p>
+          <p class="code"><span id="code"></span></p>
+        </div>
+        <div class="connect-qr">
+          <p class="muted">ou scannent ce QR code</p>
+          <div id="qr-canvas"></div>
+        </div>
+      </div>
     </div>
     <h3>Joueurs connectés (<span id="player-count">0</span>)</h3>
     <ul id="players" class="players"></ul>
@@ -54,6 +62,7 @@
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="/host.js"></script>
 </body>
 </html>

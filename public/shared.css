@@ -99,6 +99,34 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
   color: #fbbf24;
   margin-top: 6px;
 }
+.connect-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 30px;
+  align-items: center;
+  text-align: left;
+}
+.connect-grid .connect-text { text-align: center; }
+.connect-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.connect-qr #qr-canvas {
+  background: #fff;
+  padding: 10px;
+  border-radius: 12px;
+  display: inline-block;
+  line-height: 0;
+}
+.connect-qr #qr-canvas img,
+.connect-qr #qr-canvas canvas {
+  display: block;
+}
+@media (max-width: 720px) {
+  .connect-grid { grid-template-columns: 1fr; }
+}
 
 .players {
   list-style: none;

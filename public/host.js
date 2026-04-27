@@ -42,6 +42,10 @@ $('create-btn').onclick = () => {
     if (res.error) { alert(res.error); return; }
     $('lobby-title').textContent = res.title;
     $('code').textContent = res.code;
+    const playerUrl = `${window.location.origin}/?code=${res.code}`;
+    const qrEl = $('qr-canvas');
+    qrEl.innerHTML = '';
+    new QRCode(qrEl, { text: playerUrl, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M });
     show('lobby');
   });
 };
