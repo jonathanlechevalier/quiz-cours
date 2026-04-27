@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Édition · Quiz PM</title>
+  <link rel="stylesheet" href="/shared.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body class="admin">
+  <div class="screen">
+    <div class="admin-topbar">
+      <a href="/admin/" class="link-back">← Liste des quiz</a>
+      <span class="muted"><code id="quiz-id"></code></span>
+    </div>
+
+    <label class="label-block">Titre du quiz
+      <input type="text" id="title" class="title-input" placeholder="Ex : Cours 4 — Roadmap">
+    </label>
+
+    <h2 class="section-title">Questions</h2>
+    <div id="questions"></div>
+
+    <button id="add-q" class="btn-secondary btn-wide">+ Ajouter une question</button>
+
+    <div class="editor-footer">
+      <span id="save-status" class="save-status"></span>
+      <button id="save" class="btn-primary">💾 Enregistrer</button>
+    </div>
+  </div>
+
+  <script src="/admin/edit.js"></script>
+</body>
+</html>

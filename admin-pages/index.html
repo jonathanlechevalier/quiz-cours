@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz PM — Gestion des quiz</title>
+  <link rel="stylesheet" href="/shared.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body class="admin">
+  <div class="screen">
+    <div class="admin-topbar">
+      <h1>📝 Gestion des quiz</h1>
+      <a href="/host.html" class="link-back">Vue prof →</a>
+    </div>
+
+    <div class="banner">
+      Les modifications sont enregistrées sur ton Mac (dossier <code>quizzes/</code>). Pour les déployer sur le serveur en ligne, lance dans le terminal :
+      <code class="block">cd /Users/jonathanl/quiz-pm &amp;&amp; git add quizzes/ &amp;&amp; git commit -m "Mise à jour quiz" &amp;&amp; git push</code>
+    </div>
+
+    <div id="quiz-list"></div>
+
+    <button id="new-btn" class="btn-primary btn-wide">+ Nouveau quiz</button>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+</body>
+</html>

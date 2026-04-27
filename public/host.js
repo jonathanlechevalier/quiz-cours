@@ -9,6 +9,9 @@ let currentQuestion = null;
 let countdownTimer = null;
 
 async function init() {
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+    $('admin-link-wrap').classList.remove('hidden');
+  }
   try {
     const quizzes = await fetch('/api/quizzes').then(r => r.json());
     $('public-url').textContent = window.location.origin;

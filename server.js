@@ -13,6 +13,60 @@ const io = new Server(server);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+function localhostOnly(req, res, next) {
+  const ip = (req.ip || req.connection.remoteAddress || '').replace(/^::ffff:/, '');
+  if (ip === '127.0.0.1' || ip === '::1') return next();
+  res.status(403).send("Cette interface est accessible uniquement en local (npm start sur ton Mac).");
+}
+
+app.use('/admin', localhostOnly, express.static(path.join(__dirname, 'admin-pages')));
+app.use('/api/admin', localhostOnly, express.json());
+
+app.get('/api/admin/quiz/:id', (req, res) => {
+  if (!/^[a-z0-9-]+$/i.test(req.params.id)) return res.status(400).json({ error: 'id invalide' });
+  const file = path.join(QUIZ_DIR, req.params.id + '.json');
+  if (!fs.existsSync(file)) return res.status(404).json({ error: 'introuvable' });
+  try { res.json(JSON.parse(fs.readFileSync(file, 'utf8'))); }
+  catch (e) { res.status(500).json({ error: 'fichier illisible' }); }
+});
+
+app.put('/api/admin/quiz/:id', (req, res) => {
+  if (!/^[a-z0-9-]+$/i.test(req.params.id)) return res.status(400).json({ error: 'id invalide' });
+  const error = validateQuiz(req.body);
+  if (error) return res.status(400).json({ error });
+  fs.writeFileSync(path.join(QUIZ_DIR, req.params.id + '.json'), JSON.stringify(req.body, null, 2) + '\n');
+  res.json({ ok: true });
+});
+
+app.delete('/api/admin/quiz/:id', (req, res) => {
+  if (!/^[a-z0-9-]+$/i.test(req.params.id)) return res.status(400).json({ error: 'id invalide' });
+  const file = path.join(QUIZ_DIR, req.params.id + '.json');
+  if (!fs.existsSync(file)) return res.status(404).json({ error: 'introuvable' });
+  fs.unlinkSync(file);
+  res.json({ ok: true });
+});
+
+function validateQuiz(data) {
+  if (!data || typeof data !== 'object') return 'données invalides';
+  if (!data.title || typeof data.title !== 'string' || !data.title.trim()) return 'titre manquant';
+  if (!Array.isArray(data.questions) || data.questions.length === 0) return 'au moins 1 question requise';
+  for (let i = 0; i < data.questions.length; i++) {
+    const q = data.questions[i];
+    const tag = `Question ${i + 1}`;
+    if (!q || !['qcm', 'yesno'].includes(q.type)) return `${tag} : type invalide`;
+    if (!q.q || typeof q.q !== 'string' || !q.q.trim()) return `${tag} : énoncé manquant`;
+    if (typeof q.time !== 'number' || q.time < 5 || q.time > 300) return `${tag} : durée invalide (5-300 s)`;
+    if (q.type === 'qcm') {
+      if (!Array.isArray(q.options) || q.options.length !== 4) return `${tag} : un QCM doit avoir 4 options`;
+      if (q.options.some(o => !o || typeof o !== 'string' || !o.trim())) return `${tag} : option vide`;
+      if (typeof q.answer !== 'number' || q.answer < 0 || q.answer > 3) return `${tag} : sélectionne la bonne réponse`;
+    } else {
+      if (typeof q.answer !== 'boolean') return `${tag} : sélectionne Vrai ou Faux`;
+    }
+  }
+  return null;
+}
+
 app.get('/api/quizzes', (req, res) => {
   if (!fs.existsSync(QUIZ_DIR)) return res.json([]);
   const files = fs.readdirSync(QUIZ_DIR).filter(f => f.endsWith('.json')).sort();
