@@ -1,17 +1,11 @@
 {
-  "title": "Cours 4 — No Code 2",
+  "title": "No Code 2",
   "questions": [
     {
-      "type": "qcm",
-      "q": "Question QCM à remplir ?",
-      "options": [
-        "Option A",
-        "Option B",
-        "Option C",
-        "Option D"
-      ],
-      "answer": 0,
-      "time": 20
+      "type": "yesno",
+      "q": "Si personne ne se plaint d’un problème c’est qu’il n’existe pas",
+      "answer": false,
+      "time": 10
     },
     {
       "type": "yesno",
