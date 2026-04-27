@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Quiz PM</title>
+  <link rel="stylesheet" href="/shared.css">
+</head>
+<body class="player">
+  <div id="screen-join" class="screen">
+    <h1>🎯 Quiz</h1>
+    <form id="join-form">
+      <input type="text" id="code" placeholder="Code à 4 chiffres" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required>
+      <input type="text" id="name" placeholder="Ton prénom" maxlength="20" required>
+      <button type="submit">Rejoindre</button>
+    </form>
+    <div id="join-error" class="error"></div>
+  </div>
+
+  <div id="screen-lobby" class="screen hidden">
+    <h2>👋 <span id="player-name"></span></h2>
+    <p class="muted">En attente du démarrage…</p>
+  </div>
+
+  <div id="screen-question" class="screen hidden">
+    <p class="muted" id="q-progress"></p>
+    <h2 id="q-text"></h2>
+    <div id="q-options" class="options"></div>
+    <p class="muted hidden" id="q-waiting">⏳ Réponse envoyée. Patience…</p>
+  </div>
+
+  <div id="screen-reveal" class="screen hidden">
+    <h2 id="reveal-result"></h2>
+    <p class="big" id="reveal-points"></p>
+    <p class="muted">Score total : <strong id="reveal-total"></strong></p>
+  </div>
+
+  <div id="screen-end" class="screen hidden">
+    <h2>🏁 Partie terminée</h2>
+    <ol id="final-leaderboard" class="leaderboard"></ol>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/player.js"></script>
+</body>
+</html>

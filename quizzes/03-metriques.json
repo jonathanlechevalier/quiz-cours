@@ -1,0 +1,53 @@
+{
+  "title": "Cours 3 — Métriques produit",
+  "questions": [
+    {
+      "type": "qcm",
+      "q": "Que signifie l'acronyme AARRR (pirate metrics) ?",
+      "options": [
+        "Acquisition, Activation, Retention, Referral, Revenue",
+        "Awareness, Action, Revenue, Reach, Retention",
+        "Acquisition, Adoption, Renewal, Referral, ROI",
+        "Activation, Acquisition, Reach, Revenue, Retention"
+      ],
+      "answer": 0,
+      "time": 25
+    },
+    {
+      "type": "yesno",
+      "q": "Le DAU (Daily Active Users) est toujours une bonne North Star Metric.",
+      "answer": false,
+      "time": 15
+    },
+    {
+      "type": "qcm",
+      "q": "Une bonne North Star Metric doit être :",
+      "options": [
+        "Facile à mesurer techniquement",
+        "Corrélée à la valeur perçue par l'utilisateur",
+        "Identique à celle des concurrents",
+        "Mise à jour chaque semaine"
+      ],
+      "answer": 1,
+      "time": 20
+    },
+    {
+      "type": "yesno",
+      "q": "Une métrique de vanité (vanity metric) peut quand même être utile pour communiquer en externe.",
+      "answer": true,
+      "time": 15
+    },
+    {
+      "type": "qcm",
+      "q": "Quelle est la différence entre rétention et engagement ?",
+      "options": [
+        "Aucune, ce sont des synonymes",
+        "La rétention mesure le retour, l'engagement mesure l'intensité d'usage",
+        "L'engagement précède toujours la rétention",
+        "La rétention concerne les nouveaux utilisateurs uniquement"
+      ],
+      "answer": 1,
+      "time": 25
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz PM — Hôte</title>
+  <link rel="stylesheet" href="/shared.css">
+</head>
+<body class="host">
+  <div id="screen-pick" class="screen">
+    <h1>🎯 Quiz PM</h1>
+    <p class="muted">Choisis le cours du jour</p>
+    <select id="quiz-select"></select>
+    <button id="create-btn">Créer la session</button>
+  </div>
+
+  <div id="screen-lobby" class="screen hidden">
+    <h2 id="lobby-title"></h2>
+    <div class="connect-info">
+      <p class="muted">Les étudiants se connectent à</p>
+      <p class="big" id="public-url"></p>
+      <p class="muted">avec le code de session</p>
+      <p class="code"><span id="code"></span></p>
+    </div>
+    <h3>Joueurs connectés (<span id="player-count">0</span>)</h3>
+    <ul id="players" class="players"></ul>
+    <button id="start-btn">Démarrer le quiz</button>
+  </div>
+
+  <div id="screen-question" class="screen hidden">
+    <p class="muted" id="hq-progress"></p>
+    <h2 id="hq-text"></h2>
+    <div id="hq-options" class="options host-options"></div>
+    <div class="status-bar">
+      <span>⏱ <span id="timer"></span>s</span>
+      <span>📊 <span id="answer-count">0</span> / <span id="answer-total">0</span> réponses</span>
+    </div>
+  </div>
+
+  <div id="screen-reveal" class="screen hidden">
+    <h2 id="reveal-correct"></h2>
+    <h3>Classement</h3>
+    <ol id="leaderboard" class="leaderboard"></ol>
+    <button id="next-btn">Suivant</button>
+  </div>
+
+  <div id="screen-end" class="screen hidden">
+    <h1>🏁 Partie terminée</h1>
+    <ol id="final-leaderboard" class="leaderboard"></ol>
+    <button onclick="location.reload()">Nouvelle partie</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/host.js"></script>
+</body>
+</html>
