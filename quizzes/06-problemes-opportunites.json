@@ -1,0 +1,23 @@
+{
+  "title": "Cours 6 — Problèmes et opportunités",
+  "questions": [
+    {
+      "type": "qcm",
+      "q": "Question QCM à remplir ?",
+      "options": [
+        "Option A",
+        "Option B",
+        "Option C",
+        "Option D"
+      ],
+      "answer": 0,
+      "time": 20
+    },
+    {
+      "type": "yesno",
+      "q": "Question vrai/faux à remplir ?",
+      "answer": true,
+      "time": 15
+    }
+  ]
+}
