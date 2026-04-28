@@ -121,6 +121,82 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
   .connect-grid { grid-template-columns: 1fr; }
 }
 
+/* Barres de distribution */
+.distribution { margin: 12px 0; }
+.dist-hint { margin-bottom: 10px; font-size: 0.9rem; }
+.dist-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.dist-label {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  color: #fff;
+}
+.dist-track {
+  flex: 1;
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px;
+  height: 36px;
+  overflow: hidden;
+}
+.dist-bar {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.45s cubic-bezier(.4,0,.2,1);
+  min-width: 0;
+}
+.dist-bar.opt-0 { background: #ef4444; }
+.dist-bar.opt-1 { background: #3b82f6; }
+.dist-bar.opt-2 { background: #f59e0b; }
+.dist-bar.opt-3 { background: #10b981; }
+.dist-bar.bar-correct { background: #4ade80 !important; }
+.dist-bar.bar-dim     { background: rgba(255,255,255,0.12) !important; }
+.dist-pct {
+  min-width: 42px;
+  text-align: right;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Écran résultats finaux */
+.score-card {
+  background: rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 28px;
+  text-align: center;
+  margin: 20px 0;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.score-label { font-size: 1rem; color: #94a3b8; margin-bottom: 8px; }
+.score-value { font-size: 4rem; font-weight: 800; color: #fbbf24; line-height: 1; }
+.comparisons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.comp-card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 18px 12px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.comp-label { font-size: 0.82rem; color: #94a3b8; margin-bottom: 8px; line-height: 1.4; }
+.comp-value { font-size: 1.8rem; font-weight: 800; }
+.comp-top    { color: #4ade80; }
+.comp-bottom { color: #f87171; }
+
 /* Bouton terminer la session */
 .end-session-btn {
   position: fixed;

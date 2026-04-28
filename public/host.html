@@ -27,7 +27,7 @@
         <div class="connect-text">
           <p class="muted">Les étudiants rejoignent sur</p>
           <p class="big" id="public-url"></p>
-          <p class="muted" style="margin-top:8px;">et entrent leur prénom</p>
+          <p class="muted" style="margin-top:8px;">et entrent leur pseudo</p>
         </div>
         <div class="connect-qr">
           <p class="muted">ou scannent ce QR code</p>
@@ -44,6 +44,7 @@
     <p class="muted" id="hq-progress"></p>
     <h2 id="hq-text"></h2>
     <div id="hq-options" class="options host-options"></div>
+    <div id="hq-distribution" class="distribution" style="margin-top:16px;"></div>
     <div class="status-bar">
       <span>⏱ <span id="timer"></span>s</span>
       <span>📊 <span id="answer-count">0</span> / <span id="answer-total">0</span> réponses</span>
@@ -52,14 +53,28 @@
 
   <div id="screen-reveal" class="screen hidden">
     <h2 id="reveal-correct"></h2>
+    <div id="reveal-dist" class="distribution" style="margin:20px 0;"></div>
     <h3>Classement</h3>
     <ol id="leaderboard" class="leaderboard"></ol>
     <button id="next-btn">Suivant</button>
   </div>
 
   <div id="screen-end" class="screen hidden">
-    <h1>🏁 Partie terminée</h1>
-    <ol id="final-leaderboard" class="leaderboard"></ol>
+    <h1>🏁 Résultats</h1>
+    <div class="score-card">
+      <p class="score-label">Score moyen de la salle</p>
+      <p class="score-value" id="avg-score-host">—</p>
+    </div>
+    <div class="comparisons">
+      <div class="comp-card">
+        <p class="comp-label">🏆 PMs Google &amp; OpenAI</p>
+        <p class="comp-value comp-top">100%</p>
+      </div>
+      <div class="comp-card">
+        <p class="comp-label">😅 Influenceurs LinkedIn</p>
+        <p class="comp-value comp-bottom">2%</p>
+      </div>
+    </div>
     <button onclick="location.reload()">Nouvelle partie</button>
   </div>
 

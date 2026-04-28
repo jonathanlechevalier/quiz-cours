@@ -88,7 +88,7 @@ function loadQuiz(id) {
   catch (e) { return null; }
 }
 
-// Session unique — un seul formateur à la fois
+// Session unique
 let currentSession = null;
 
 function publicQuestion(q) {
@@ -99,6 +99,30 @@ function leaderboard(session) {
   return [...session.players.values()]
     .sort((a, b) => b.score - a.score)
     .map(p => ({ name: p.name, score: p.score }));
+}
+
+function computeDistribution(session, q) {
+  const counts = [];
+  if (q.type === 'qcm') {
+    for (let i = 0; i < 4; i++) {
+      let c = 0;
+      for (const ans of session.answers.values()) if (ans.choice === i) c++;
+      counts.push(c);
+    }
+  } else {
+    let t = 0, f = 0;
+    for (const ans of session.answers.values()) {
+      if (ans.choice === true) t++;
+      else if (ans.choice === false) f++;
+    }
+    counts.push(t, f);
+  }
+  return { type: q.type, counts, answered: session.answers.size, total: session.players.size };
+}
+
+function avgRate(session) {
+  if (!session.totalPossible) return null;
+  return Math.round(session.totalCorrect / session.totalPossible * 100);
 }
 
 function endQuestion(session) {
@@ -114,14 +138,18 @@ function endQuestion(session) {
       if (correct) {
         const ratio = Math.min(1, ans.elapsed / (q.time * 1000));
         points = Math.round(1000 * (1 - 0.5 * ratio));
+        session.totalCorrect++;
       }
     }
+    session.totalPossible++;
     player.score += points;
     results.push({ name: player.name, correct, points, total: player.score });
   }
   session.state = 'reveal';
+  const dist = computeDistribution(session, q);
   io.to(session.roomId).emit('question:end', {
     correct: q.answer,
+    dist,
     results: results.sort((a, b) => b.total - a.total),
     leaderboard: leaderboard(session),
     isLast: session.currentQuestion >= session.quiz.questions.length - 1,
@@ -131,10 +159,7 @@ function endQuestion(session) {
 function closeSession(reason) {
   if (!currentSession) return;
   if (currentSession.timer) clearTimeout(currentSession.timer);
-  io.to(currentSession.roomId).emit('session:end', {
-    leaderboard: leaderboard(currentSession),
-    reason,
-  });
+  io.to(currentSession.roomId).emit('session:end', { avgRate: avgRate(currentSession), reason });
   currentSession = null;
 }
 
@@ -147,12 +172,14 @@ io.on('connection', (socket) => {
     const roomId = `room-${Date.now()}`;
     currentSession = {
       roomId, quiz, hostId: socket.id,
-      players: new Map(),      // socketId → { name, score, socketId }
+      players: new Map(),
       currentQuestion: -1,
       state: 'lobby',
-      answers: new Map(),      // socketId → { choice, elapsed }
+      answers: new Map(),
       timer: null,
       questionStart: 0,
+      totalCorrect: 0,
+      totalPossible: 0,
     };
     socket.join(roomId);
     socket.data.role = 'host';
@@ -169,9 +196,9 @@ io.on('connection', (socket) => {
     if (!currentSession) return cb({ error: 'Aucune session ouverte pour le moment. Réessaie dans quelques secondes.' });
     if (currentSession.state !== 'lobby') return cb({ error: 'La partie a déjà démarré.' });
     name = (name || '').trim().slice(0, 20);
-    if (!name) return cb({ error: 'Prénom requis' });
+    if (!name) return cb({ error: 'Pseudo requis' });
     if ([...currentSession.players.values()].some(p => p.name.toLowerCase() === name.toLowerCase())) {
-      return cb({ error: 'Ce prénom est déjà pris' });
+      return cb({ error: 'Ce pseudo est déjà pris' });
     }
     currentSession.players.set(socket.id, { name, score: 0, socketId: socket.id });
     socket.join(currentSession.roomId);
@@ -190,7 +217,7 @@ io.on('connection', (socket) => {
     currentSession.currentQuestion++;
     if (currentSession.currentQuestion >= currentSession.quiz.questions.length) {
       currentSession.state = 'end';
-      io.to(currentSession.roomId).emit('session:end', { leaderboard: leaderboard(currentSession) });
+      io.to(currentSession.roomId).emit('session:end', { avgRate: avgRate(currentSession) });
       return;
     }
     const q = currentSession.quiz.questions[currentSession.currentQuestion];
@@ -211,6 +238,8 @@ io.on('connection', (socket) => {
     if (currentSession.answers.has(socket.id)) return;
     const elapsed = Date.now() - currentSession.questionStart;
     currentSession.answers.set(socket.id, { choice, elapsed });
+    const q = currentSession.quiz.questions[currentSession.currentQuestion];
+    io.to(currentSession.roomId).emit('question:distribution', computeDistribution(currentSession, q));
     io.to(currentSession.hostId).emit('question:answer-count', {
       count: currentSession.answers.size,
       total: currentSession.players.size,

@@ -34,7 +34,6 @@ async function init() {
       o.textContent = `${q.title} — ${q.count} questions`;
       sel.appendChild(o);
     });
-    // Génère le QR une seule fois (URL statique, pas de code)
     if (!qrGenerated) {
       new QRCode($('qr-canvas'), {
         text: window.location.origin,
@@ -59,7 +58,7 @@ $('create-btn').onclick = () => {
 };
 
 $('end-btn').onclick = () => {
-  if (!confirm('Terminer la session ?\nTous les étudiants verront le classement final.')) return;
+  if (!confirm('Terminer la session ?\nTous les étudiants verront les résultats finaux.')) return;
   socket.emit('host:end');
   if (countdownTimer) clearInterval(countdownTimer);
   show('pick');
@@ -85,6 +84,7 @@ socket.on('question:start', ({ index, total, question }) => {
   $('hq-text').textContent = question.q;
   const opts = $('hq-options');
   opts.innerHTML = '';
+  $('hq-distribution').innerHTML = '';
 
   if (question.type === 'qcm') {
     question.options.forEach((opt, i) => {
@@ -121,12 +121,23 @@ socket.on('question:answer-count', ({ count, total }) => {
   $('answer-total').textContent = total;
 });
 
-socket.on('question:end', ({ correct, leaderboard, isLast }) => {
+// Live distribution on question screen
+socket.on('question:distribution', (dist) => {
+  if (!currentQuestion) return;
+  renderBars($('hq-distribution'), currentQuestion, dist, null);
+});
+
+socket.on('question:end', ({ correct, leaderboard, isLast, dist }) => {
   if (countdownTimer) clearInterval(countdownTimer);
-  let label = currentQuestion.type === 'qcm'
+  const label = currentQuestion.type === 'qcm'
     ? currentQuestion.options[correct]
     : (correct ? 'Vrai' : 'Faux');
   $('reveal-correct').textContent = `✅ Bonne réponse : ${label}`;
+
+  if (dist && currentQuestion) {
+    renderBars($('reveal-dist'), currentQuestion, dist, correct);
+  }
+
   const ol = $('leaderboard');
   ol.innerHTML = '';
   leaderboard.forEach(p => {
@@ -134,23 +145,45 @@ socket.on('question:end', ({ correct, leaderboard, isLast }) => {
     li.innerHTML = `<span>${escape(p.name)}</span><strong>${p.score} pts</strong>`;
     ol.appendChild(li);
   });
-  $('next-btn').textContent = isLast ? 'Voir le classement final' : 'Question suivante';
+  $('next-btn').textContent = isLast ? 'Voir les résultats' : 'Question suivante';
   show('reveal');
 });
 
-socket.on('session:end', ({ leaderboard }) => {
+socket.on('session:end', ({ avgRate }) => {
   if (countdownTimer) clearInterval(countdownTimer);
-  const ol = $('final-leaderboard');
-  ol.innerHTML = '';
-  (leaderboard || []).forEach((p, i) => {
-    const medal = ['🥇', '🥈', '🥉'][i] || '';
-    const li = document.createElement('li');
-    li.innerHTML = `<span>${medal} ${escape(p.name)}</span><strong>${p.score} pts</strong>`;
-    ol.appendChild(li);
-  });
+  const val = (avgRate !== null && avgRate !== undefined) ? `${avgRate}%` : '—';
+  $('avg-score-host').textContent = val;
   show('end');
 });
 
+function renderBars(container, question, dist, correct) {
+  container.innerHTML = '';
+  const labels  = question.type === 'qcm' ? ['A', 'B', 'C', 'D'] : ['Vrai', 'Faux'];
+  const choices = question.type === 'qcm' ? [0, 1, 2, 3] : [true, false];
+  const colors  = question.type === 'qcm' ? ['opt-0','opt-1','opt-2','opt-3'] : ['opt-3','opt-0'];
+  const total = Math.max(dist.total, 1);
+
+  labels.forEach((label, i) => {
+    const count = dist.counts[i] || 0;
+    const pct = Math.round(count / total * 100);
+    const revealed = correct !== null;
+    const isCorrect = revealed && choices[i] === correct;
+    let barClass = colors[i];
+    if (revealed) barClass = isCorrect ? 'bar-correct' : 'bar-dim';
+
+    const row = document.createElement('div');
+    row.className = 'dist-row';
+    row.innerHTML = `
+      <div class="dist-label ${colors[i]}">${label}</div>
+      <div class="dist-track">
+        <div class="dist-bar ${barClass}" style="width:${pct}%"></div>
+      </div>
+      <span class="dist-pct">${pct}%</span>
+    `;
+    container.appendChild(row);
+  });
+}
+
 function escape(s) {
-  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 }

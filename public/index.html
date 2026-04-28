@@ -10,7 +10,7 @@
   <div id="screen-join" class="screen">
     <h1>🎯 Quiz</h1>
     <form id="join-form">
-      <input type="text" id="name" placeholder="Ton prénom" maxlength="20" required>
+      <input type="text" id="name" placeholder="Ton pseudo" maxlength="20" autocomplete="off" required>
       <button type="submit">Rejoindre</button>
     </form>
     <div id="join-error" class="error"></div>
@@ -25,18 +25,35 @@
     <p class="muted" id="q-progress"></p>
     <h2 id="q-text"></h2>
     <div id="q-options" class="options"></div>
-    <p class="muted hidden" id="q-waiting">⏳ Réponse envoyée. Patience…</p>
+    <div id="q-distribution" class="distribution hidden">
+      <p class="muted dist-hint">⏳ En attente des autres votes…</p>
+      <div id="dist-bars"></div>
+    </div>
   </div>
 
   <div id="screen-reveal" class="screen hidden">
     <h2 id="reveal-result"></h2>
     <p class="big" id="reveal-points"></p>
-    <p class="muted">Score total : <strong id="reveal-total"></strong></p>
+    <div id="reveal-bars" class="distribution"></div>
+    <p class="muted" style="margin-top:8px;">Score : <strong id="reveal-total"></strong></p>
   </div>
 
   <div id="screen-end" class="screen hidden">
-    <h2>🏁 Partie terminée</h2>
-    <ol id="final-leaderboard" class="leaderboard"></ol>
+    <h2>🏁 Résultats</h2>
+    <div class="score-card">
+      <p class="score-label">Score moyen de la salle</p>
+      <p class="score-value" id="avg-score">—</p>
+    </div>
+    <div class="comparisons">
+      <div class="comp-card">
+        <p class="comp-label">🏆 PMs Google &amp; OpenAI</p>
+        <p class="comp-value comp-top">100%</p>
+      </div>
+      <div class="comp-card">
+        <p class="comp-label">😅 Influenceurs LinkedIn</p>
+        <p class="comp-value comp-bottom">2%</p>
+      </div>
+    </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
