@@ -8,6 +8,43 @@ function show(name) {
 let myName = '';
 let currentQuestion = null;
 let hasAnswered = false;
+let timerInterval = null;
+
+function startTimer(duration) {
+  const fill = $('player-timer-fill');
+  const sec  = $('player-timer-sec');
+
+  // Reset animation
+  fill.classList.remove('running');
+  fill.style.setProperty('--t', duration + 's');
+  fill.style.background = '';
+  void fill.offsetWidth; // force reflow
+  fill.classList.add('running');
+
+  let remaining = duration;
+  sec.textContent = remaining;
+  sec.style.color = '';
+
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    remaining--;
+    sec.textContent = Math.max(0, remaining);
+    const ratio = remaining / duration;
+    const color = ratio > 0.4 ? '#4ade80' : ratio > 0.15 ? '#f59e0b' : '#ef4444';
+    sec.style.color = color;
+    fill.style.background = color;
+    if (remaining <= 0) clearInterval(timerInterval);
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  const fill = $('player-timer-fill');
+  fill.classList.remove('running');
+  fill.style.width = '0%';
+  $('player-timer-sec').textContent = '0';
+  $('player-timer-sec').style.color = '#ef4444';
+}
 
 $('join-form').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -26,6 +63,7 @@ socket.on('question:start', ({ index, total, question }) => {
   hasAnswered = false;
   $('q-progress').textContent = `Question ${index + 1} / ${total}`;
   $('q-text').textContent = question.q;
+  startTimer(question.time);
   const opts = $('q-options');
   opts.innerHTML = '';
   opts.classList.remove('hidden');
@@ -67,6 +105,7 @@ socket.on('question:distribution', (dist) => {
 
 // Timer écoulé — on attend que l'animateur révèle
 socket.on('question:pending', ({ dist }) => {
+  stopTimer();
   $('dist-hint').textContent = '⏳ En attente de l\'animateur…';
   if (currentQuestion && dist) renderBars($('dist-bars'), currentQuestion, dist, null);
   if (!hasAnswered) {
