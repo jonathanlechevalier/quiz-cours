@@ -65,12 +65,22 @@ socket.on('question:distribution', (dist) => {
   renderBars($('dist-bars'), currentQuestion, dist, null);
 });
 
+// Timer écoulé — on attend que l'animateur révèle
+socket.on('question:pending', ({ dist }) => {
+  $('dist-hint').textContent = '⏳ En attente de l\'animateur…';
+  if (currentQuestion && dist) renderBars($('dist-bars'), currentQuestion, dist, null);
+  if (!hasAnswered) {
+    // L'étudiant n'a pas répondu à temps — affiche les barres quand même
+    $('q-options').classList.add('hidden');
+    $('q-distribution').classList.remove('hidden');
+  }
+});
+
+// L'animateur a cliqué "Afficher les résultats"
 socket.on('question:end', ({ results, correct, dist }) => {
   const me = results.find(r => r.name === myName);
   if (me) {
     $('reveal-result').textContent = me.correct ? '✅ Bonne réponse !' : '❌ Raté';
-    $('reveal-points').textContent = me.correct ? `+${me.points} pts` : '0 point';
-    $('reveal-total').textContent = me.total + ' pts';
   }
   if (dist && currentQuestion) {
     renderBars($('reveal-bars'), currentQuestion, dist, correct);

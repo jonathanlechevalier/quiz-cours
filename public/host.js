@@ -127,6 +127,19 @@ socket.on('question:distribution', (dist) => {
   renderBars($('hq-distribution'), currentQuestion, dist, null);
 });
 
+// Timer fini — affiche le bouton de révélation
+socket.on('question:pending', ({ dist }) => {
+  if (countdownTimer) clearInterval(countdownTimer);
+  $('timer').textContent = '0';
+  if (currentQuestion && dist) renderBars($('hq-distribution'), currentQuestion, dist, null);
+  $('reveal-btn').classList.remove('hidden');
+});
+
+$('reveal-btn').onclick = () => {
+  $('reveal-btn').classList.add('hidden');
+  socket.emit('host:reveal');
+};
+
 socket.on('question:end', ({ correct, leaderboard, isLast, dist }) => {
   if (countdownTimer) clearInterval(countdownTimer);
   const label = currentQuestion.type === 'qcm'

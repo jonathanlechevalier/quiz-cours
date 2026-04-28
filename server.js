@@ -145,15 +145,18 @@ function endQuestion(session) {
     player.score += points;
     results.push({ name: player.name, correct, points, total: player.score });
   }
-  session.state = 'reveal';
   const dist = computeDistribution(session, q);
-  io.to(session.roomId).emit('question:end', {
+  // Passe en mode "en attente de la révélation par l'animateur"
+  session.state = 'pending-reveal';
+  session.pendingReveal = {
     correct: q.answer,
     dist,
     results: results.sort((a, b) => b.total - a.total),
     leaderboard: leaderboard(session),
     isLast: session.currentQuestion >= session.quiz.questions.length - 1,
-  });
+  };
+  // Notify tout le monde que le temps est écoulé (sans révéler la bonne réponse)
+  io.to(session.roomId).emit('question:pending', { dist });
 }
 
 function closeSession(reason) {
@@ -211,9 +214,17 @@ io.on('connection', (socket) => {
     cb({ ok: true, name });
   });
 
+  socket.on('host:reveal', () => {
+    if (!currentSession || currentSession.hostId !== socket.id) return;
+    if (currentSession.state !== 'pending-reveal') return;
+    currentSession.state = 'reveal';
+    io.to(currentSession.roomId).emit('question:end', currentSession.pendingReveal);
+    currentSession.pendingReveal = null;
+  });
+
   socket.on('host:next', () => {
     if (!currentSession || currentSession.hostId !== socket.id) return;
-    if (currentSession.state === 'question') return;
+    if (currentSession.state === 'question' || currentSession.state === 'pending-reveal') return;
     currentSession.currentQuestion++;
     if (currentSession.currentQuestion >= currentSession.quiz.questions.length) {
       currentSession.state = 'end';
