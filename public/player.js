@@ -81,7 +81,7 @@ socket.on('question:start', ({ index, total, question }) => {
   } else {
     [['Vrai', true], ['Faux', false]].forEach(([label, val]) => {
       const b = document.createElement('button');
-      b.className = 'option opt-' + (val ? 3 : 0);
+      b.className = 'option opt-' + (val ? 3 : 1);   // Vrai=vert, Faux=bleu
       b.textContent = label;
       b.onclick = () => sendAnswer(val);
       opts.appendChild(b);
@@ -137,7 +137,7 @@ function renderBars(container, question, dist, correct) {
   container.innerHTML = '';
   const labels  = question.type === 'qcm' ? ['A', 'B', 'C', 'D'] : ['Vrai', 'Faux'];
   const choices = question.type === 'qcm' ? [0, 1, 2, 3] : [true, false];
-  const colors  = question.type === 'qcm' ? ['opt-0','opt-1','opt-2','opt-3'] : ['opt-3','opt-0'];
+  const colors  = question.type === 'qcm' ? ['opt-0','opt-1','opt-2','opt-3'] : ['opt-3','opt-1'];
   const total = Math.max(dist.total, 1);
 
   labels.forEach((label, i) => {
