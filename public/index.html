@@ -22,18 +22,27 @@
   </div>
 
   <div id="screen-question" class="screen hidden">
-    <p class="muted" id="q-progress"></p>
-    <h2 id="q-text"></h2>
-    <div class="player-timer">
-      <span id="player-timer-sec">—</span>
-      <div class="timer-track">
-        <div id="player-timer-fill" class="timer-fill"></div>
+    <!-- Haut : jauge + compteur -->
+    <div class="q-top">
+      <div class="player-timer">
+        <span id="player-timer-sec">—</span>
+        <div class="timer-track">
+          <div id="player-timer-fill" class="timer-fill"></div>
+        </div>
       </div>
     </div>
-    <div id="q-options" class="options"></div>
-    <div id="q-distribution" class="distribution hidden">
-      <p class="muted" id="dist-hint">⏳ En attente des autres votes…</p>
-      <div id="dist-bars"></div>
+    <!-- Milieu : progression + énoncé -->
+    <div class="q-body">
+      <p class="muted" id="q-progress"></p>
+      <h2 id="q-text"></h2>
+    </div>
+    <!-- Bas : boutons de réponse ou barres de votes -->
+    <div class="q-bottom">
+      <div id="q-options" class="options"></div>
+      <div id="q-distribution" class="distribution hidden">
+        <p class="muted" id="dist-hint">⏳ En attente des autres votes…</p>
+        <div id="dist-bars"></div>
+      </div>
     </div>
   </div>
 
