@@ -7,18 +7,11 @@ function show(name) {
 
 let myName = '';
 
-const urlCode = new URLSearchParams(location.search).get('code');
-if (urlCode && /^\d{4}$/.test(urlCode)) {
-  $('code').value = urlCode;
-  setTimeout(() => $('name').focus(), 0);
-}
-
 $('join-form').addEventListener('submit', (e) => {
   e.preventDefault();
-  const code = $('code').value.trim();
   const name = $('name').value.trim();
   $('join-error').textContent = '';
-  socket.emit('player:join', { code, name }, (res) => {
+  socket.emit('player:join', { name }, (res) => {
     if (res.error) { $('join-error').textContent = res.error; return; }
     myName = res.name;
     $('player-name').textContent = res.name;
@@ -72,7 +65,7 @@ socket.on('question:end', ({ results }) => {
 socket.on('session:end', ({ leaderboard }) => {
   const ol = $('final-leaderboard');
   ol.innerHTML = '';
-  leaderboard.forEach(p => {
+  (leaderboard || []).forEach(p => {
     const li = document.createElement('li');
     li.innerHTML = `<span>${escape(p.name)}</span><strong>${p.score} pts</strong>`;
     ol.appendChild(li);
@@ -83,7 +76,3 @@ socket.on('session:end', ({ leaderboard }) => {
 function escape(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }
-
-socket.on('disconnect', () => {
-  // Silent — show join screen on full disconnect
-});

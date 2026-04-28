@@ -88,14 +88,8 @@ function loadQuiz(id) {
   catch (e) { return null; }
 }
 
-const sessions = new Map();
-
-function generateCode() {
-  let code;
-  do { code = String(Math.floor(1000 + Math.random() * 9000)); }
-  while (sessions.has(code));
-  return code;
-}
+// Session unique — un seul formateur à la fois
+let currentSession = null;
 
 function publicQuestion(q) {
   return { type: q.type, q: q.q, options: q.options || null, time: q.time };
@@ -112,8 +106,8 @@ function endQuestion(session) {
   if (session.timer) { clearTimeout(session.timer); session.timer = null; }
   const q = session.quiz.questions[session.currentQuestion];
   const results = [];
-  for (const [sid, player] of session.players) {
-    const ans = session.answers.get(sid);
+  for (const [, player] of session.players) {
+    const ans = session.answers.get(player.socketId);
     let correct = false, points = 0;
     if (ans) {
       correct = ans.choice === q.answer;
@@ -126,7 +120,7 @@ function endQuestion(session) {
     results.push({ name: player.name, correct, points, total: player.score });
   }
   session.state = 'reveal';
-  io.to(session.code).emit('question:end', {
+  io.to(session.roomId).emit('question:end', {
     correct: q.answer,
     results: results.sort((a, b) => b.total - a.total),
     leaderboard: leaderboard(session),
@@ -134,100 +128,109 @@ function endQuestion(session) {
   });
 }
 
+function closeSession(reason) {
+  if (!currentSession) return;
+  if (currentSession.timer) clearTimeout(currentSession.timer);
+  io.to(currentSession.roomId).emit('session:end', {
+    leaderboard: leaderboard(currentSession),
+    reason,
+  });
+  currentSession = null;
+}
+
 io.on('connection', (socket) => {
+
   socket.on('host:create', ({ quizId }, cb) => {
     const quiz = loadQuiz(quizId);
     if (!quiz) return cb({ error: 'Quiz introuvable' });
-    const code = generateCode();
-    sessions.set(code, {
-      code, quiz, hostId: socket.id,
-      players: new Map(),
+    if (currentSession) closeSession('Nouvelle session démarrée');
+    const roomId = `room-${Date.now()}`;
+    currentSession = {
+      roomId, quiz, hostId: socket.id,
+      players: new Map(),      // socketId → { name, score, socketId }
       currentQuestion: -1,
       state: 'lobby',
-      answers: new Map(),
+      answers: new Map(),      // socketId → { choice, elapsed }
       timer: null,
       questionStart: 0,
-    });
-    socket.join(code);
+    };
+    socket.join(roomId);
     socket.data.role = 'host';
-    socket.data.code = code;
-    cb({ code, title: quiz.title, total: quiz.questions.length });
+    socket.data.roomId = roomId;
+    cb({ title: quiz.title, total: quiz.questions.length });
   });
 
-  socket.on('player:join', ({ code, name }, cb) => {
-    const session = sessions.get(code);
-    if (!session) return cb({ error: 'Code invalide' });
-    if (session.state !== 'lobby') return cb({ error: 'La partie a déjà démarré' });
+  socket.on('host:end', () => {
+    if (!currentSession || currentSession.hostId !== socket.id) return;
+    closeSession('Session terminée par le formateur');
+  });
+
+  socket.on('player:join', ({ name }, cb) => {
+    if (!currentSession) return cb({ error: 'Aucune session ouverte pour le moment. Réessaie dans quelques secondes.' });
+    if (currentSession.state !== 'lobby') return cb({ error: 'La partie a déjà démarré.' });
     name = (name || '').trim().slice(0, 20);
     if (!name) return cb({ error: 'Prénom requis' });
-    if ([...session.players.values()].some(p => p.name.toLowerCase() === name.toLowerCase())) {
+    if ([...currentSession.players.values()].some(p => p.name.toLowerCase() === name.toLowerCase())) {
       return cb({ error: 'Ce prénom est déjà pris' });
     }
-    session.players.set(socket.id, { name, score: 0 });
-    socket.join(code);
+    currentSession.players.set(socket.id, { name, score: 0, socketId: socket.id });
+    socket.join(currentSession.roomId);
     socket.data.role = 'player';
-    socket.data.code = code;
+    socket.data.roomId = currentSession.roomId;
     socket.data.name = name;
-    io.to(session.hostId).emit('lobby:update', {
-      players: [...session.players.values()].map(p => ({ name: p.name })),
+    io.to(currentSession.hostId).emit('lobby:update', {
+      players: [...currentSession.players.values()].map(p => ({ name: p.name })),
     });
     cb({ ok: true, name });
   });
 
   socket.on('host:next', () => {
-    const session = sessions.get(socket.data.code);
-    if (!session || session.hostId !== socket.id) return;
-    if (session.state === 'question') return;
-    session.currentQuestion++;
-    if (session.currentQuestion >= session.quiz.questions.length) {
-      session.state = 'end';
-      io.to(session.code).emit('session:end', { leaderboard: leaderboard(session) });
+    if (!currentSession || currentSession.hostId !== socket.id) return;
+    if (currentSession.state === 'question') return;
+    currentSession.currentQuestion++;
+    if (currentSession.currentQuestion >= currentSession.quiz.questions.length) {
+      currentSession.state = 'end';
+      io.to(currentSession.roomId).emit('session:end', { leaderboard: leaderboard(currentSession) });
       return;
     }
-    const q = session.quiz.questions[session.currentQuestion];
-    session.answers = new Map();
-    session.state = 'question';
-    session.questionStart = Date.now();
-    io.to(session.code).emit('question:start', {
-      index: session.currentQuestion,
-      total: session.quiz.questions.length,
+    const q = currentSession.quiz.questions[currentSession.currentQuestion];
+    currentSession.answers = new Map();
+    currentSession.state = 'question';
+    currentSession.questionStart = Date.now();
+    io.to(currentSession.roomId).emit('question:start', {
+      index: currentSession.currentQuestion,
+      total: currentSession.quiz.questions.length,
       question: publicQuestion(q),
     });
-    session.timer = setTimeout(() => endQuestion(session), q.time * 1000);
+    currentSession.timer = setTimeout(() => endQuestion(currentSession), q.time * 1000);
   });
 
   socket.on('player:answer', ({ choice }) => {
-    const session = sessions.get(socket.data.code);
-    if (!session || session.state !== 'question') return;
-    if (session.answers.has(socket.id)) return;
-    const elapsed = Date.now() - session.questionStart;
-    session.answers.set(socket.id, { choice, elapsed });
-    io.to(session.hostId).emit('question:answer-count', {
-      count: session.answers.size,
-      total: session.players.size,
+    if (!currentSession || currentSession.state !== 'question') return;
+    if (!currentSession.players.has(socket.id)) return;
+    if (currentSession.answers.has(socket.id)) return;
+    const elapsed = Date.now() - currentSession.questionStart;
+    currentSession.answers.set(socket.id, { choice, elapsed });
+    io.to(currentSession.hostId).emit('question:answer-count', {
+      count: currentSession.answers.size,
+      total: currentSession.players.size,
     });
-    if (session.players.size > 0 && session.answers.size >= session.players.size) {
-      endQuestion(session);
+    if (currentSession.players.size > 0 && currentSession.answers.size >= currentSession.players.size) {
+      endQuestion(currentSession);
     }
   });
 
   socket.on('disconnect', () => {
-    const code = socket.data.code;
-    if (!code) return;
-    const session = sessions.get(code);
-    if (!session) return;
-    if (socket.data.role === 'host') {
-      io.to(code).emit('session:end', {
-        leaderboard: leaderboard(session),
-        reason: "L'hôte s'est déconnecté",
-      });
-      if (session.timer) clearTimeout(session.timer);
-      sessions.delete(code);
-    } else if (socket.data.role === 'player') {
-      session.players.delete(socket.id);
-      io.to(session.hostId).emit('lobby:update', {
-        players: [...session.players.values()].map(p => ({ name: p.name })),
-      });
+    if (!currentSession) return;
+    if (socket.data.role === 'host' && currentSession.hostId === socket.id) {
+      closeSession("Le formateur s'est déconnecté");
+    } else if (socket.data.role === 'player' && currentSession.players.has(socket.id)) {
+      currentSession.players.delete(socket.id);
+      if (currentSession.hostId) {
+        io.to(currentSession.hostId).emit('lobby:update', {
+          players: [...currentSession.players.values()].map(p => ({ name: p.name })),
+        });
+      }
     }
   });
 });

@@ -1,12 +1,16 @@
 const socket = io();
 const $ = (id) => document.getElementById(id);
 const screens = ['pick', 'lobby', 'question', 'reveal', 'end'];
+const screensWithSession = ['lobby', 'question', 'reveal'];
+
 function show(name) {
   for (const s of screens) $('screen-' + s).classList.toggle('hidden', s !== name);
+  $('end-btn').classList.toggle('hidden', !screensWithSession.includes(name));
 }
 
 let currentQuestion = null;
 let countdownTimer = null;
+let qrGenerated = false;
 
 async function init() {
   if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
@@ -30,6 +34,15 @@ async function init() {
       o.textContent = `${q.title} — ${q.count} questions`;
       sel.appendChild(o);
     });
+    // Génère le QR une seule fois (URL statique, pas de code)
+    if (!qrGenerated) {
+      new QRCode($('qr-canvas'), {
+        text: window.location.origin,
+        width: 220, height: 220,
+        correctLevel: QRCode.CorrectLevel.M,
+      });
+      qrGenerated = true;
+    }
   } catch (e) {
     alert('Erreur de chargement : ' + e.message);
   }
@@ -41,13 +54,15 @@ $('create-btn').onclick = () => {
   socket.emit('host:create', { quizId }, (res) => {
     if (res.error) { alert(res.error); return; }
     $('lobby-title').textContent = res.title;
-    $('code').textContent = res.code;
-    const playerUrl = `${window.location.origin}/?code=${res.code}`;
-    const qrEl = $('qr-canvas');
-    qrEl.innerHTML = '';
-    new QRCode(qrEl, { text: playerUrl, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M });
     show('lobby');
   });
+};
+
+$('end-btn').onclick = () => {
+  if (!confirm('Terminer la session ?\nTous les étudiants verront le classement final.')) return;
+  socket.emit('host:end');
+  if (countdownTimer) clearInterval(countdownTimer);
+  show('pick');
 };
 
 socket.on('lobby:update', ({ players }) => {
@@ -108,12 +123,9 @@ socket.on('question:answer-count', ({ count, total }) => {
 
 socket.on('question:end', ({ correct, leaderboard, isLast }) => {
   if (countdownTimer) clearInterval(countdownTimer);
-  let label = '';
-  if (currentQuestion.type === 'qcm') {
-    label = currentQuestion.options[correct];
-  } else {
-    label = correct ? 'Vrai' : 'Faux';
-  }
+  let label = currentQuestion.type === 'qcm'
+    ? currentQuestion.options[correct]
+    : (correct ? 'Vrai' : 'Faux');
   $('reveal-correct').textContent = `✅ Bonne réponse : ${label}`;
   const ol = $('leaderboard');
   ol.innerHTML = '';
@@ -127,9 +139,10 @@ socket.on('question:end', ({ correct, leaderboard, isLast }) => {
 });
 
 socket.on('session:end', ({ leaderboard }) => {
+  if (countdownTimer) clearInterval(countdownTimer);
   const ol = $('final-leaderboard');
   ol.innerHTML = '';
-  leaderboard.forEach((p, i) => {
+  (leaderboard || []).forEach((p, i) => {
     const medal = ['🥇', '🥈', '🥉'][i] || '';
     const li = document.createElement('li');
     li.innerHTML = `<span>${medal} ${escape(p.name)}</span><strong>${p.score} pts</strong>`;

@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="/shared.css">
 </head>
 <body class="host">
+
+  <button id="end-btn" class="end-session-btn hidden">⏹ Terminer la session</button>
+
   <div id="screen-pick" class="screen">
     <h1>🎯 Quiz PM</h1>
     <p class="muted">Choisis le cours du jour</p>
@@ -22,10 +25,9 @@
     <div class="connect-info">
       <div class="connect-grid">
         <div class="connect-text">
-          <p class="muted">Les étudiants se connectent à</p>
+          <p class="muted">Les étudiants rejoignent sur</p>
           <p class="big" id="public-url"></p>
-          <p class="muted">avec le code de session</p>
-          <p class="code"><span id="code"></span></p>
+          <p class="muted" style="margin-top:8px;">et entrent leur prénom</p>
         </div>
         <div class="connect-qr">
           <p class="muted">ou scannent ce QR code</p>

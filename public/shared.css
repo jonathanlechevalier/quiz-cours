@@ -91,14 +91,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
   margin: 20px 0;
   border: 1px solid rgba(255,255,255,0.1);
 }
-.connect-info .big { font-size: 1.7rem; margin: 6px 0 18px; word-break: break-all; }
-.connect-info .code {
-  font-size: 4.5rem;
-  font-weight: 800;
-  letter-spacing: 0.5rem;
-  color: #fbbf24;
-  margin-top: 6px;
-}
+.connect-info .big { font-size: 1.7rem; margin: 6px 0 10px; word-break: break-all; }
 .connect-grid {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -127,6 +120,25 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 @media (max-width: 720px) {
   .connect-grid { grid-template-columns: 1fr; }
 }
+
+/* Bouton terminer la session */
+.end-session-btn {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 100;
+  width: auto;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  margin: 0;
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.end-session-btn:hover { background: #ef4444; color: #fff; }
 
 .players {
   list-style: none;
