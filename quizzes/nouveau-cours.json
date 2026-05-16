@@ -1,0 +1,41 @@
+{
+  "title": "Soft skills",
+  "questions": [
+    {
+      "type": "qcm",
+      "q": "En comité, le CEO impose son intuition sur le design d'une feature, qui contredit tes user research. \nQue fais-tu sur le moment ?",
+      "options": [
+        "Tu défends ta position avec les données devant tout le monde",
+        "Tu acquiesces en réunion et tu ré-ouvres le sujet en 1:1 plus tard",
+        "Tu reformules son intuition comme une hypothèse à valider, et tu proposes le protocole de validation",
+        "Tu claques ta dém'"
+      ],
+      "answer": 2,
+      "time": 20
+    },
+    {
+      "type": "qcm",
+      "q": "Tu lances une nouvelle feature avec ton équipe (dev, design, data). Quel est le meilleur moyen d'obtenir leur engagement réel ?",
+      "options": [
+        "Tu présentes une spec détaillée et claire pour qu'ils sachent exactement quoi faire",
+        "Tu présentes le problème utilisateur et les objectifs business, et co-construire la solution avec eux",
+        "Tu laisses carte blanche après avoir donné le contexte",
+        "Tu les menaces"
+      ],
+      "answer": 1,
+      "time": 20
+    },
+    {
+      "type": "qcm",
+      "q": "Tu dois annoncer à un client important que la feature qu'il attendait est repoussée de 3 mois. Comment structures-tu ton message ?",
+      "options": [
+        "Tu annonces le délai puis tu expliques le contexte et les options",
+        "Tu commences par les raisons techniques, puis tu annonces le délai",
+        "Tu proposes d'abord une solution alternative pour adoucir la nouvelle",
+        "Tu laisses ton manager faire l'annonce"
+      ],
+      "answer": 0,
+      "time": 20
+    }
+  ]
+}
