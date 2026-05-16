@@ -45,7 +45,7 @@ async function newQuiz() {
   while (list.some(q => q.id === id)) id = `${baseId}-${n++}`;
   const data = {
     title: title.trim(),
-    questions: [{ type: 'qcm', q: '', options: ['', '', '', ''], answer: 0, time: 20 }],
+    questions: [],
   };
   const res = await fetch('/api/admin/quiz/' + id, {
     method: 'PUT',

@@ -32,9 +32,11 @@ app.get('/api/admin/quiz/:id', (req, res) => {
 
 app.put('/api/admin/quiz/:id', (req, res) => {
   if (!/^[a-z0-9-]+$/i.test(req.params.id)) return res.status(400).json({ error: 'id invalide' });
-  const error = validateQuiz(req.body);
-  if (error) return res.status(400).json({ error });
-  fs.writeFileSync(path.join(QUIZ_DIR, req.params.id + '.json'), JSON.stringify(req.body, null, 2) + '\n');
+  const data = req.body;
+  if (!data || typeof data !== 'object') return res.status(400).json({ error: 'données invalides' });
+  if (!data.title || typeof data.title !== 'string' || !data.title.trim()) return res.status(400).json({ error: 'titre manquant' });
+  if (!Array.isArray(data.questions)) return res.status(400).json({ error: 'format invalide' });
+  fs.writeFileSync(path.join(QUIZ_DIR, req.params.id + '.json'), JSON.stringify(data, null, 2) + '\n');
   res.json({ ok: true });
 });
 
