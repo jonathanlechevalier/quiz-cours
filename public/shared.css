@@ -83,6 +83,17 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
   font-size: 1.5rem;
 }
 
+/* Options avec texte long : colonne unique */
+.options.options-long {
+  grid-template-columns: 1fr;
+}
+.options.options-long .option {
+  min-height: 64px;
+  padding: 18px 16px;
+  font-size: 1.05rem;
+  text-align: left;
+}
+
 .connect-info {
   background: rgba(255,255,255,0.05);
   padding: 24px;
@@ -274,6 +285,16 @@ body.player #screen-question:not(.hidden) {
   text-align: right;
   font-size: 0.95rem;
   font-weight: 600;
+}
+
+/* Réponse choisie par l'étudiant */
+.dist-row-chosen .dist-label {
+  outline: 2px solid rgba(255,255,255,0.9);
+  outline-offset: 2px;
+}
+.dist-row-chosen .dist-pct {
+  font-weight: 800;
+  color: #fff;
 }
 
 /* Écran résultats finaux */

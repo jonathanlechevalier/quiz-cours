@@ -8,6 +8,7 @@ function show(name) {
 let myName = '';
 let currentQuestion = null;
 let hasAnswered = false;
+let myChoice = null;
 let timerInterval = null;
 
 function startTimer(duration) {
@@ -61,16 +62,19 @@ $('join-form').addEventListener('submit', (e) => {
 socket.on('question:start', ({ index, total, question }) => {
   currentQuestion = question;
   hasAnswered = false;
+  myChoice = null;
   $('q-progress').textContent = `Question ${index + 1} / ${total}`;
   $('q-text').textContent = question.q;
   startTimer(question.time);
   const opts = $('q-options');
   opts.innerHTML = '';
-  opts.classList.remove('hidden');
+  opts.classList.remove('hidden', 'options-long');
   $('q-distribution').classList.add('hidden');
   $('dist-bars').innerHTML = '';
 
   if (question.type === 'qcm') {
+    const maxLen = Math.max(...question.options.map(o => (o || '').length));
+    if (maxLen > 30) opts.classList.add('options-long');
     question.options.forEach((opt, i) => {
       const b = document.createElement('button');
       b.className = 'option opt-' + i;
@@ -81,7 +85,7 @@ socket.on('question:start', ({ index, total, question }) => {
   } else {
     [['Vrai', true], ['Faux', false]].forEach(([label, val]) => {
       const b = document.createElement('button');
-      b.className = 'option opt-' + (val ? 3 : 0);   // Vrai=vert, Faux=rouge
+      b.className = 'option opt-' + (val ? 3 : 0);
       b.textContent = label;
       b.onclick = () => sendAnswer(val);
       opts.appendChild(b);
@@ -93,6 +97,7 @@ socket.on('question:start', ({ index, total, question }) => {
 function sendAnswer(choice) {
   if (hasAnswered) return;
   hasAnswered = true;
+  myChoice = choice;
   socket.emit('player:answer', { choice });
   $('q-options').classList.add('hidden');
   $('q-distribution').classList.remove('hidden');
@@ -100,29 +105,26 @@ function sendAnswer(choice) {
 
 socket.on('question:distribution', (dist) => {
   if (!currentQuestion) return;
-  renderBars($('dist-bars'), currentQuestion, dist, null);
+  renderBars($('dist-bars'), currentQuestion, dist, null, myChoice);
 });
 
-// Timer écoulé — on attend que l'animateur révèle
 socket.on('question:pending', ({ dist }) => {
   stopTimer();
   $('dist-hint').textContent = '⏳ En attente de l\'animateur…';
-  if (currentQuestion && dist) renderBars($('dist-bars'), currentQuestion, dist, null);
+  if (currentQuestion && dist) renderBars($('dist-bars'), currentQuestion, dist, null, myChoice);
   if (!hasAnswered) {
-    // L'étudiant n'a pas répondu à temps — affiche les barres quand même
     $('q-options').classList.add('hidden');
     $('q-distribution').classList.remove('hidden');
   }
 });
 
-// L'animateur a cliqué "Afficher les résultats"
 socket.on('question:end', ({ results, correct, dist }) => {
   const me = results.find(r => r.name === myName);
   if (me) {
     $('reveal-result').textContent = me.correct ? '✅ Bonne réponse !' : '❌ Raté';
   }
   if (dist && currentQuestion) {
-    renderBars($('reveal-bars'), currentQuestion, dist, correct);
+    renderBars($('reveal-bars'), currentQuestion, dist, correct, myChoice);
   }
   show('reveal');
 });
@@ -133,7 +135,7 @@ socket.on('session:end', ({ avgRate }) => {
   show('end');
 });
 
-function renderBars(container, question, dist, correct) {
+function renderBars(container, question, dist, correct, chosen = null) {
   container.innerHTML = '';
   const labels  = question.type === 'qcm' ? ['A', 'B', 'C', 'D'] : ['Vrai', 'Faux'];
   const choices = question.type === 'qcm' ? [0, 1, 2, 3] : [true, false];
@@ -145,17 +147,18 @@ function renderBars(container, question, dist, correct) {
     const pct = Math.round(count / total * 100);
     const revealed = correct !== null;
     const isCorrect = revealed && choices[i] === correct;
+    const isChosen = chosen !== null && choices[i] === chosen;
     let barClass = colors[i];
     if (revealed) barClass = isCorrect ? 'bar-correct' : 'bar-dim';
 
     const row = document.createElement('div');
-    row.className = 'dist-row';
+    row.className = 'dist-row' + (isChosen ? ' dist-row-chosen' : '');
     row.innerHTML = `
       <div class="dist-label ${colors[i]}">${label}</div>
       <div class="dist-track">
         <div class="dist-bar ${barClass}" style="width:${pct}%"></div>
       </div>
-      <span class="dist-pct">${pct}%</span>
+      <span class="dist-pct">${pct}%${isChosen ? ' ✓' : ''}</span>
     `;
     container.appendChild(row);
   });
