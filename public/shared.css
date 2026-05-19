@@ -271,6 +271,33 @@ body.player #screen-question:not(.hidden) {
 .comp-top    { color: #4ade80; }
 .comp-bottom { color: #f87171; }
 
+/* Récap votes côté animateur (après le timer) */
+.hq-counts { border-radius: 12px; overflow: hidden; }
+.count-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 1.15rem;
+}
+.count-row:last-child { border-bottom: none; }
+.count-label {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  flex-shrink: 0;
+  color: #000;
+}
+.count-text { flex: 1; font-weight: 500; }
+.count-votes { font-size: 1.5rem; font-weight: 800; min-width: 90px; text-align: right; }
+
 /* Bouton terminer la session */
 .end-session-btn {
   position: fixed;

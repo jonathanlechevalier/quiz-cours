@@ -1,7 +1,7 @@
 const socket = io();
 const $ = (id) => document.getElementById(id);
-const screens = ['pick', 'lobby', 'question', 'reveal', 'end'];
-const screensWithSession = ['lobby', 'question', 'reveal'];
+const screens = ['pick', 'lobby', 'question', 'end'];
+const screensWithSession = ['lobby', 'question'];
 
 function show(name) {
   for (const s of screens) $('screen-' + s).classList.toggle('hidden', s !== name);
@@ -76,15 +76,19 @@ socket.on('lobby:update', ({ players }) => {
 });
 
 $('start-btn').onclick = () => socket.emit('host:next');
-$('next-btn').onclick = () => socket.emit('host:next');
 
 socket.on('question:start', ({ index, total, question }) => {
   currentQuestion = question;
   $('hq-progress').textContent = `Question ${index + 1} / ${total}`;
   $('hq-text').textContent = question.q;
+
+  // Réinitialise le récap et le bouton
+  $('hq-counts').classList.add('hidden');
+  $('hq-counts').innerHTML = '';
+  $('next-q-btn').classList.add('hidden');
+
   const opts = $('hq-options');
   opts.innerHTML = '';
-  $('hq-distribution').innerHTML = '';
 
   if (question.type === 'qcm') {
     question.options.forEach((opt, i) => {
@@ -121,46 +125,25 @@ socket.on('question:answer-count', ({ count, total }) => {
   $('answer-total').textContent = total;
 });
 
-// Live distribution on question screen
-socket.on('question:distribution', (dist) => {
-  if (!currentQuestion) return;
-  renderBars($('hq-distribution'), currentQuestion, dist, null);
-});
-
-// Timer fini — affiche le bouton de révélation
-socket.on('question:pending', ({ dist }) => {
+// Timer fini — affiche le récap texte et le bouton pour passer
+socket.on('question:pending', ({ dist, isLast }) => {
   if (countdownTimer) clearInterval(countdownTimer);
   $('timer').textContent = '0';
-  if (currentQuestion && dist) renderBars($('hq-distribution'), currentQuestion, dist, null);
-  $('reveal-btn').classList.remove('hidden');
-});
 
-$('reveal-btn').onclick = () => {
-  $('reveal-btn').classList.add('hidden');
-  socket.emit('host:reveal');
-};
-
-socket.on('question:end', ({ correct, leaderboard, isLast, dist }) => {
-  if (countdownTimer) clearInterval(countdownTimer);
-  const label = currentQuestion.type === 'qcm'
-    ? currentQuestion.options[correct]
-    : (correct ? 'Vrai' : 'Faux');
-  $('reveal-correct').textContent = `✅ Bonne réponse : ${label}`;
-
-  if (dist && currentQuestion) {
-    renderBars($('reveal-dist'), currentQuestion, dist, correct);
+  if (currentQuestion && dist) {
+    renderCounts($('hq-counts'), currentQuestion, dist);
+    $('hq-counts').classList.remove('hidden');
   }
 
-  const ol = $('leaderboard');
-  ol.innerHTML = '';
-  leaderboard.forEach(p => {
-    const li = document.createElement('li');
-    li.innerHTML = `<span>${escape(p.name)}</span><strong>${p.score} pts</strong>`;
-    ol.appendChild(li);
-  });
-  $('next-btn').textContent = isLast ? 'Voir les résultats' : 'Question suivante';
-  show('reveal');
+  const btn = $('next-q-btn');
+  btn.textContent = isLast ? '🏁 Terminer le quiz' : '▶ Question suivante';
+  btn.classList.remove('hidden');
 });
+
+$('next-q-btn').onclick = () => {
+  $('next-q-btn').classList.add('hidden');
+  socket.emit('host:next');
+};
 
 socket.on('session:end', ({ avgRate }) => {
   if (countdownTimer) clearInterval(countdownTimer);
@@ -169,29 +152,20 @@ socket.on('session:end', ({ avgRate }) => {
   show('end');
 });
 
-function renderBars(container, question, dist, correct) {
+function renderCounts(container, question, dist) {
   container.innerHTML = '';
   const labels  = question.type === 'qcm' ? ['A', 'B', 'C', 'D'] : ['Vrai', 'Faux'];
-  const choices = question.type === 'qcm' ? [0, 1, 2, 3] : [true, false];
+  const options = question.type === 'qcm' ? question.options : ['Vrai', 'Faux'];
   const colors  = question.type === 'qcm' ? ['opt-0','opt-1','opt-2','opt-3'] : ['opt-3','opt-0'];
-  const total = Math.max(dist.total, 1);
 
   labels.forEach((label, i) => {
     const count = dist.counts[i] || 0;
-    const pct = Math.round(count / total * 100);
-    const revealed = correct !== null;
-    const isCorrect = revealed && choices[i] === correct;
-    let barClass = colors[i];
-    if (revealed) barClass = isCorrect ? 'bar-correct' : 'bar-dim';
-
     const row = document.createElement('div');
-    row.className = 'dist-row';
+    row.className = 'count-row';
     row.innerHTML = `
-      <div class="dist-label ${colors[i]}">${label}</div>
-      <div class="dist-track">
-        <div class="dist-bar ${barClass}" style="width:${pct}%"></div>
-      </div>
-      <span class="dist-pct">${pct}%</span>
+      <span class="count-label ${colors[i]}">${label}</span>
+      <span class="count-text">${escape(options[i] || label)}</span>
+      <span class="count-votes">${count} vote${count !== 1 ? 's' : ''}</span>
     `;
     container.appendChild(row);
   });
