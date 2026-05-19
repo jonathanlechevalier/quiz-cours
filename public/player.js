@@ -47,6 +47,19 @@ function stopTimer() {
   $('player-timer-sec').style.color = '#ef4444';
 }
 
+// Reconnexion automatique si le nom est sauvegardé
+socket.on('connect', () => {
+  const saved = localStorage.getItem('quiz-pm-name');
+  if (!saved || myName) return; // pas de nom sauvegardé, ou déjà connecté
+  socket.emit('player:join', { name: saved }, (res) => {
+    if (!res.ok) { localStorage.removeItem('quiz-pm-name'); return; }
+    myName = res.name;
+    $('player-name').textContent = res.name;
+    if (!res.rejoin) show('lobby');
+    // Si rejoin, le serveur envoie question:start / question:pending qui gèrent l'écran
+  });
+});
+
 $('join-form').addEventListener('submit', (e) => {
   e.preventDefault();
   const name = $('name').value.trim();
@@ -54,6 +67,7 @@ $('join-form').addEventListener('submit', (e) => {
   socket.emit('player:join', { name }, (res) => {
     if (res.error) { $('join-error').textContent = res.error; return; }
     myName = res.name;
+    localStorage.setItem('quiz-pm-name', res.name);
     $('player-name').textContent = res.name;
     show('lobby');
   });
@@ -130,6 +144,8 @@ socket.on('question:end', ({ results, correct, dist }) => {
 });
 
 socket.on('session:end', ({ avgRate }) => {
+  localStorage.removeItem('quiz-pm-name');
+  myName = '';
   const val = (avgRate !== null && avgRate !== undefined) ? `${avgRate}%` : '—';
   $('avg-score').textContent = val;
   show('end');

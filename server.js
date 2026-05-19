@@ -200,9 +200,47 @@ io.on('connection', (socket) => {
 
   socket.on('player:join', ({ name }, cb) => {
     if (!currentSession) return cb({ error: 'Aucune session ouverte pour le moment. Réessaie dans quelques secondes.' });
-    if (currentSession.state !== 'lobby') return cb({ error: 'La partie a déjà démarré.' });
     name = (name || '').trim().slice(0, 20);
     if (!name) return cb({ error: 'Pseudo requis' });
+
+    // Re-join : le joueur existe déjà (reconnexion en cours de partie)
+    const existing = [...currentSession.players.values()].find(
+      p => p.name.toLowerCase() === name.toLowerCase()
+    );
+    if (existing) {
+      const oldId = existing.socketId;
+      // Migrer la réponse éventuelle vers le nouveau socket.id
+      const oldAnswer = currentSession.answers.get(oldId);
+      currentSession.players.delete(oldId);
+      existing.socketId = socket.id;
+      currentSession.players.set(socket.id, existing);
+      if (oldAnswer) {
+        currentSession.answers.delete(oldId);
+        currentSession.answers.set(socket.id, oldAnswer);
+      }
+      socket.join(currentSession.roomId);
+      socket.data.role = 'player';
+      socket.data.roomId = currentSession.roomId;
+      socket.data.name = existing.name;
+      // Renvoyer l'état courant pour resynchroniser l'écran
+      const state = currentSession.state;
+      if (state === 'question' || state === 'pending-reveal') {
+        const q = currentSession.quiz.questions[currentSession.currentQuestion];
+        socket.emit('question:start', {
+          index: currentSession.currentQuestion,
+          total: currentSession.quiz.questions.length,
+          question: publicQuestion(q),
+          playerCount: currentSession.players.size,
+        });
+        if (state === 'pending-reveal' && currentSession.pendingReveal) {
+          socket.emit('question:pending', { dist: currentSession.pendingReveal.dist });
+        }
+      }
+      return cb({ ok: true, name: existing.name, rejoin: true });
+    }
+
+    // Nouveau joueur — uniquement en lobby
+    if (currentSession.state !== 'lobby') return cb({ error: 'La partie a déjà démarré.' });
     if ([...currentSession.players.values()].some(p => p.name.toLowerCase() === name.toLowerCase())) {
       return cb({ error: 'Ce pseudo est déjà pris' });
     }
@@ -268,12 +306,16 @@ io.on('connection', (socket) => {
     if (socket.data.role === 'host' && currentSession.hostId === socket.id) {
       closeSession("Le formateur s'est déconnecté");
     } else if (socket.data.role === 'player' && currentSession.players.has(socket.id)) {
-      currentSession.players.delete(socket.id);
-      if (currentSession.hostId) {
-        io.to(currentSession.hostId).emit('lobby:update', {
-          players: [...currentSession.players.values()].map(p => ({ name: p.name })),
-        });
+      if (currentSession.state === 'lobby') {
+        // En lobby : retirer le joueur et mettre à jour la liste
+        currentSession.players.delete(socket.id);
+        if (currentSession.hostId) {
+          io.to(currentSession.hostId).emit('lobby:update', {
+            players: [...currentSession.players.values()].map(p => ({ name: p.name })),
+          });
+        }
       }
+      // En cours de partie : garder le joueur pour qu'il puisse se reconnecter
     }
   });
 });
