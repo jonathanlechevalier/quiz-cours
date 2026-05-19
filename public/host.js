@@ -11,6 +11,8 @@ function show(name) {
 let currentQuestion = null;
 let countdownTimer = null;
 let qrGenerated = false;
+let currentIndex = 0;
+let totalQuestions = 0;
 
 async function init() {
   if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
@@ -77,8 +79,10 @@ socket.on('lobby:update', ({ players }) => {
 
 $('start-btn').onclick = () => socket.emit('host:next');
 
-socket.on('question:start', ({ index, total, question }) => {
+socket.on('question:start', ({ index, total, question, playerCount }) => {
   currentQuestion = question;
+  currentIndex = index;
+  totalQuestions = total;
   $('hq-progress').textContent = `Question ${index + 1} / ${total}`;
   $('hq-text').textContent = question.q;
 
@@ -107,7 +111,7 @@ socket.on('question:start', ({ index, total, question }) => {
   }
 
   $('answer-count').textContent = '0';
-  $('answer-total').textContent = '0';
+  $('answer-total').textContent = playerCount || '?';
   let remaining = question.time;
   $('timer').textContent = remaining;
   if (countdownTimer) clearInterval(countdownTimer);
@@ -126,7 +130,7 @@ socket.on('question:answer-count', ({ count, total }) => {
 });
 
 // Timer fini — affiche le récap texte et le bouton pour passer
-socket.on('question:pending', ({ dist, isLast }) => {
+socket.on('question:pending', ({ dist }) => {
   if (countdownTimer) clearInterval(countdownTimer);
   $('timer').textContent = '0';
 
@@ -135,6 +139,7 @@ socket.on('question:pending', ({ dist, isLast }) => {
     $('hq-counts').classList.remove('hidden');
   }
 
+  const isLast = currentIndex >= totalQuestions - 1;
   const btn = $('next-q-btn');
   btn.textContent = isLast ? '🏁 Terminer le quiz' : '▶ Question suivante';
   btn.classList.remove('hidden');

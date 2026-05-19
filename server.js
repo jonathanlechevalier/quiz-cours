@@ -241,6 +241,7 @@ io.on('connection', (socket) => {
       index: currentSession.currentQuestion,
       total: currentSession.quiz.questions.length,
       question: publicQuestion(q),
+      playerCount: currentSession.players.size,
     });
     currentSession.timer = setTimeout(() => endQuestion(currentSession), q.time * 1000);
   });
