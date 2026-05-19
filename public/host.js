@@ -93,6 +93,7 @@ socket.on('question:start', ({ index, total, question, playerCount }) => {
 
   const opts = $('hq-options');
   opts.innerHTML = '';
+  opts.classList.remove('hidden');
 
   if (question.type === 'qcm') {
     question.options.forEach((opt, i) => {
@@ -112,6 +113,15 @@ socket.on('question:start', ({ index, total, question, playerCount }) => {
 
   $('answer-count').textContent = '0';
   $('answer-total').textContent = playerCount || '?';
+
+  // Jauge timer
+  const fill = $('hq-timer-fill');
+  fill.classList.remove('running');
+  fill.style.setProperty('--t', question.time + 's');
+  fill.style.background = '';
+  void fill.offsetWidth;
+  fill.classList.add('running');
+
   let remaining = question.time;
   $('timer').textContent = remaining;
   if (countdownTimer) clearInterval(countdownTimer);
@@ -133,6 +143,12 @@ socket.on('question:answer-count', ({ count, total }) => {
 socket.on('question:pending', ({ dist }) => {
   if (countdownTimer) clearInterval(countdownTimer);
   $('timer').textContent = '0';
+
+  // Arrête la jauge et masque les blocs de réponse
+  const fill = $('hq-timer-fill');
+  fill.classList.remove('running');
+  fill.style.width = '0%';
+  $('hq-options').classList.add('hidden');
 
   if (currentQuestion && dist) {
     renderCounts($('hq-counts'), currentQuestion, dist);

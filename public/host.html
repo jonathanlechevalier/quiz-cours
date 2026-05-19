@@ -44,10 +44,20 @@
     <p class="muted" id="hq-progress"></p>
     <h2 id="hq-text"></h2>
     <div id="hq-options" class="options host-options"></div>
-    <div class="status-bar">
-      <span>⏱ <span id="timer"></span>s</span>
-      <span>📊 <span id="answer-count">0</span> / <span id="answer-total">0</span> réponses</span>
+
+    <!-- Jauge timer -->
+    <div class="host-timer-wrap">
+      <div class="timer-track">
+        <div id="hq-timer-fill" class="timer-fill"></div>
+      </div>
+      <span id="timer" class="host-timer-num">—</span>
     </div>
+
+    <!-- Compteur réponses (grand) -->
+    <div class="host-answer-display">
+      <span id="answer-count">0</span><span class="hac-sep"> / </span><span id="answer-total">0</span><span class="hac-label">réponses</span>
+    </div>
+
     <div id="hq-counts" class="hq-counts hidden" style="margin-top:20px;"></div>
     <button id="next-q-btn" class="hidden" style="margin-top:20px; background:#FFCE04; color:#000; font-size:1.2rem;"></button>
   </div>
