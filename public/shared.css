@@ -356,6 +356,7 @@ body.player #screen-question:not(.hidden) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 8px;
+  margin-bottom: 24px;
 }
 .players li {
   background: rgba(255,255,255,0.08);
