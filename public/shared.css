@@ -91,7 +91,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
   min-height: 64px;
   padding: 18px 16px;
   font-size: 1.05rem;
-  text-align: left;
+  justify-content: flex-start;
 }
 
 .connect-info {
@@ -431,6 +431,6 @@ body.player #screen-question:not(.hidden) {
   h1 { font-size: 2rem; }
   h2 { font-size: 1.4rem; }
   .options { grid-template-columns: 1fr; }
-  .options .option { min-height: 70px; padding: 20px 14px; font-size: 1.1rem; text-align: left; }
+  .options .option { min-height: 70px; padding: 20px 14px; font-size: 1.1rem; justify-content: flex-start; }
   .connect-info .code { font-size: 3rem; }
 }
