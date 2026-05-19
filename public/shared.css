@@ -248,6 +248,7 @@ body.player #screen-question:not(.hidden) {
   align-items: center;
   gap: 10px;
   margin-bottom: 8px;
+  min-height: 36px;
 }
 .dist-label {
   width: 36px;
@@ -288,13 +289,15 @@ body.player #screen-question:not(.hidden) {
 }
 
 /* Réponse choisie par l'étudiant */
-.dist-row-chosen .dist-label {
-  outline: 2px solid rgba(255,255,255,0.9);
-  outline-offset: 2px;
-}
-.dist-row-chosen .dist-pct {
-  font-weight: 800;
-  color: #fff;
+.dist-mine {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 20px;
+  padding: 1px 7px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Écran résultats finaux */

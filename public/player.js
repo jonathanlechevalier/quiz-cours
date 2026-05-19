@@ -158,7 +158,7 @@ function renderBars(container, question, dist, correct, chosen = null) {
       <div class="dist-track">
         <div class="dist-bar ${barClass}" style="width:${pct}%"></div>
       </div>
-      <span class="dist-pct">${pct}%${isChosen ? ' ✓' : ''}</span>
+      <span class="dist-pct">${pct}%</span>${isChosen ? '<span class="dist-mine">ton vote</span>' : ''}
     `;
     container.appendChild(row);
   });
