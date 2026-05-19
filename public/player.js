@@ -47,12 +47,12 @@ function stopTimer() {
   $('player-timer-sec').style.color = '#ef4444';
 }
 
-// Reconnexion automatique si le nom est sauvegardé
+// Reconnexion automatique après perte de connexion
 socket.on('connect', () => {
   const saved = localStorage.getItem('quiz-pm-name');
-  if (!saved || myName) return; // pas de nom sauvegardé, ou déjà connecté
+  if (!saved) return;
   socket.emit('player:join', { name: saved }, (res) => {
-    if (!res.ok) { localStorage.removeItem('quiz-pm-name'); return; }
+    if (!res.ok) { localStorage.removeItem('quiz-pm-name'); myName = ''; return; }
     myName = res.name;
     $('player-name').textContent = res.name;
     if (!res.rejoin) show('lobby');
