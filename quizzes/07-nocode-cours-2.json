@@ -15,18 +15,18 @@
       "options": [
         "Quel problème cherche-t-on à résoudre ?",
         "Pour qui ?",
-        "Comment va faire ça techniquement ?",
+        "Comment on va faire ça techniquement ?",
         "Comment saura-t-on que c'est réussi ?"
       ]
     },
     {
       "type": "qcm",
-      "q": "Une équipe a livré 14 fonctionnalités ce trimestre. Une autre en a livré 3. Laquelle a le mieux travaillé d'un point de vue produit ?",
+      "q": "Un Product Builder a livré 14 fonctionnalités ce trimestre. Un  autre en a livré 3. Lequel a le mieux travaillé d'un point de vue produit ?",
       "options": [
-        "Celle qui a livré 14, évidemment",
-        "Celle qui a livré 3",
+        "Celui qui en a livré 14, évidemment",
+        "Celui qui en a livré 3",
         "Impossible à dire avec cette seule information",
-        "Celle qui a fait le plus d'heures"
+        "Celui qui a fait le plus d'heures"
       ],
       "answer": 2,
       "time": 25
