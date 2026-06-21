@@ -3,9 +3,21 @@
   "questions": [
     {
       "type": "yesno",
-      "q": "Si personne ne se plaint d'un problème, c'est qu'il n'existe pas.",
-      "answer": true,
+      "q": "Le client a toujours raison sur ce dont il a besoin. ",
+      "answer": false,
       "time": 20
+    },
+    {
+      "type": "qcm",
+      "q": "Parmi ces quatre questions, laquelle un product builder NE DOIT PAS se poser en premier ?",
+      "answer": 2,
+      "time": 25,
+      "options": [
+        "Quel problème cherche-t-on à résoudre ?",
+        "Pour qui ?",
+        "Comment va faire ça techniquement ?",
+        "Comment saura-t-on que c'est réussi ?"
+      ]
     },
     {
       "type": "qcm",
@@ -30,6 +42,12 @@
       ],
       "answer": 1,
       "time": 25
+    },
+    {
+      "type": "yesno",
+      "q": "Construire la bonne chose est plus important que bien construire la chose. ",
+      "answer": true,
+      "time": 20
     }
   ]
 }
