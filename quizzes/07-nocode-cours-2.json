@@ -1,0 +1,35 @@
+{
+  "title": "No Code - Cours 2",
+  "questions": [
+    {
+      "type": "yesno",
+      "q": "Si personne ne se plaint d'un problème, c'est qu'il n'existe pas.",
+      "answer": true,
+      "time": 20
+    },
+    {
+      "type": "qcm",
+      "q": "Une équipe a livré 14 fonctionnalités ce trimestre. Une autre en a livré 3. Laquelle a le mieux travaillé d'un point de vue produit ?",
+      "options": [
+        "Celle qui a livré 14, évidemment",
+        "Celle qui a livré 3",
+        "Impossible à dire avec cette seule information",
+        "Celle qui a fait le plus d'heures"
+      ],
+      "answer": 2,
+      "time": 25
+    },
+    {
+      "type": "qcm",
+      "q": "Quel est le meilleur premier réflexe face à une longue liste d'idées à prioriser ?",
+      "options": [
+        "Voter à l'instinct, le plus rapide gagne",
+        "Clarifier l'objectif qu'on cherche à atteindre avant de classer quoi que ce soit",
+        "Tout faire, mais dans l'ordre alphabétique",
+        "Demander au plus gradé de décider"
+      ],
+      "answer": 1,
+      "time": 25
+    }
+  ]
+}
